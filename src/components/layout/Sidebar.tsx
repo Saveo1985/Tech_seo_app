@@ -1,57 +1,54 @@
 import React from 'react';
-import { LayoutDashboard, Settings, ListTodo, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { clsx } from 'clsx';
+import { LayoutDashboard, CheckSquare, Settings, Users, Activity } from 'lucide-react';
 
-const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-    { label: 'SEO Scanner', icon: Search, path: '/scanner' },
-    { label: 'Tasks', icon: ListTodo, path: '/tasks' },
-    { label: 'Settings', icon: Settings, path: '/settings' },
-];
-
-export const Sidebar = () => {
+export function Sidebar() {
     const location = useLocation();
+    const isActive = (path: string) => location.pathname === path;
+
+    const navItems = [
+        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/clients', label: 'Kunden / SEO', icon: Users },
+        { path: '/tasks', label: 'Aufgaben', icon: CheckSquare },
+        { path: '/settings', label: 'Einstellungen', icon: Settings },
+    ];
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-brand-dark text-white flex flex-col border-r border-gray-800 z-50">
-            {/* TOP AREA */}
+        <aside className="w-64 bg-[#101010] text-gray-400 flex flex-col h-screen fixed left-0 top-0 border-r border-gray-800 z-50">
             <div className="h-16 flex items-center px-6 border-b border-gray-800">
-                {/* Placeholder Icon/Logo */}
-                <div className="h-8 w-8 bg-brand-primary rounded mr-3 opacity-80"></div>
-                <h1 className="text-xl font-serif text-brand-primary tracking-wide">TECH SEO</h1>
+                <Activity className="text-brand-primary mr-3" />
+                <h1 className="text-xl font-federo text-brand-primary tracking-wide">TECH SEO</h1>
             </div>
 
-            {/* MIDDLE AREA: Navigation */}
             <nav className="flex-1 py-6 px-3 space-y-1">
-                {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={clsx(
-                                'flex items-center px-3 py-3 rounded-lg transition-colors group',
-                                isActive
-                                    ? 'bg-white/10 text-brand-primary'
-                                    : 'text-gray-400 hover:text-brand-primary hover:bg-white/5'
-                            )}
-                        >
-                            <Icon className="w-5 h-5 mr-3" />
-                            <span className="font-medium">{item.label}</span>
-                        </Link>
-                    );
-                })}
+                {navItems.map((item) => (
+                    <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${isActive(item.path)
+                                ? 'bg-gray-800 text-brand-primary shadow-md'
+                                : 'hover:bg-gray-900 hover:text-white'
+                            }`}
+                    >
+                        <item.icon
+                            size={20}
+                            className={`mr-3 transition-colors ${isActive(item.path) ? 'text-brand-primary' : 'text-gray-500 group-hover:text-brand-primary'
+                                }`}
+                        />
+                        <span className="font-medium font-barlow">{item.label}</span>
+                    </Link>
+                ))}
             </nav>
 
-            {/* BOTTOM AREA */}
             <div className="p-4 border-t border-gray-800">
-                <div className="flex items-center text-xs text-gray-500">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
-                    SYSTEM ONLINE
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-xs text-gray-500 font-mono">SYSTEM ONLINE</span>
+                </div>
+                <div className="text-[10px] text-gray-600 font-mono">
+                    v1.1.0 - Client Module
                 </div>
             </div>
         </aside>
     );
-};
+}

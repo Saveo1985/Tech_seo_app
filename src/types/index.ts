@@ -1,14 +1,35 @@
 export interface Task {
-    id?: string;
+    id: string;
     title: string;
     status: 'open' | 'in_progress' | 'done';
     priority: 'low' | 'medium' | 'high';
-    dueDate: string; // ISO Date String
-    createdAt: number;
+    dueDate?: any;
+    createdAt: any;
 }
 
-// Generischer Typ für API-Antworten
-export interface ApiResponse<T> {
-    data: T | null;
-    error: string | null;
+export interface SeoMemory {
+    brand: string;
+    tone: string;
+    targetAudience: string;
+    allowedCities: string[];
+    servicesTaxonomy: string[];
+    forbiddenTerms: string[];
+    uniqueSellingPoints: string[];
+}
+
+export interface Client {
+    id: string;
+    name: string;
+    website: string;
+    wordpressUrl: string;
+    n8nWebhookMeta: string;
+    n8nWebhookAltText: string;
+    seoMemory: SeoMemory;
+    createdAt: any;
+}
+
+export interface ScanResult {
+    url: string;
+    score: number;
+    // ... other fields
 }
