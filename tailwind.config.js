@@ -8,9 +8,9 @@ export default {
         extend: {
             colors: {
                 brand: {
-                    dark: '#101010', // Sidebar/Header BG
-                    light: '#F0F0F3', // Main Content BG
-                    primary: '#B7EF02', // Accent/Primary
+                    dark: '#101010',
+                    light: '#F0F0F3',
+                    primary: '#B7EF02',
                 }
             },
             fontFamily: {
