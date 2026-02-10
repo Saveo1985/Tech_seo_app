@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Save, Globe, Zap, Activity, Play, Loader2 } from 'lucide-react';
 import { Client } from '../types';
 import { getClients, saveClient, deleteClient } from '../lib/firestore-clients';
-import { triggerWorkflow } from '../lib/n8n-service'; // Import service
-import toast from 'react-hot-toast'; // Assuming we have toast for feedback
+import { triggerWorkflow } from '../lib/n8n-service';
 
 export function Clients() {
     const [clients, setClients] = useState<Client[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [triggering, setTriggering] = useState<string | null>(null); // To track which button is loading
+    const [triggering, setTriggering] = useState<string | null>(null);
 
     const emptyClient: Client = {
         id: '',
@@ -43,7 +42,8 @@ export function Clients() {
             setClients(data);
         } catch (e) {
             console.error(e);
-            toast.error("Fehler beim Laden der Kunden");
+            // Fallback alert instead of toast
+            // console.log("Fehler beim Laden");
         } finally {
             setLoading(false);
         }
@@ -60,39 +60,39 @@ export function Clients() {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Diesen Kunden wirklich löschen?')) {
+        if (window.confirm('Diesen Kunden wirklich löschen?')) {
             await deleteClient(id);
             loadClients();
-            toast.success("Kunde gelöscht");
         }
     };
 
     const handleSave = async () => {
-        if (!currentClient.name) return toast.error('Name ist erforderlich');
+        if (!currentClient.name) return window.alert('Name ist erforderlich');
         await saveClient(currentClient);
         setIsEditing(false);
         loadClients();
-        toast.success("Kunde gespeichert");
     };
 
+    // Trigger Logic using standard Alert
     const handleTrigger = async (client: Client, type: 'meta' | 'alt_text') => {
         const url = type === 'meta' ? client.n8nWebhookMeta : client.n8nWebhookAltText;
         const label = type === 'meta' ? "Meta Gen" : "Alt Text";
 
-        if (!url) return toast.error(`Kein Webhook für ${label} hinterlegt.`);
+        if (!url) return window.alert(`Kein Webhook für ${label} hinterlegt.`);
 
         setTriggering(`${client.id}-${type}`);
+
         const result = await triggerWorkflow(url, client, type);
+
         setTriggering(null);
 
         if (result.success) {
-            toast.success(`${label}: ${result.message}`);
+            window.alert(`${label}: ${result.message}`);
         } else {
-            toast.error(`${label}: ${result.message}`);
+            window.alert(`${label} Fehler: ${result.message}`);
         }
     };
 
-    // Helper for comma-separated inputs (Tags)
     const handleArrayInput = (field: keyof typeof currentClient.seoMemory, value: string) => {
         const arr = value.split(',').map(s => s.trim()).filter(s => s !== '');
         setCurrentClient(prev => ({
@@ -102,6 +102,7 @@ export function Clients() {
     };
 
     if (isEditing) {
+        // EDIT MODE
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -121,25 +122,56 @@ export function Clients() {
                         <h3 className="text-lg font-bold border-b pb-2 mb-4 flex items-center gap-2">
                             <Globe size={18} className="text-brand-primary-dark" /> Basis & Verbindung
                         </h3>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Firmenname</label>
-                            <input value={currentClient.name} onChange={e => setCurrentClient({ ...currentClient, name: e.target.value })} className="mt-1 w-full p-2 border rounded bg-gray-50" placeholder="z.B. Jumpin Prater" />
+                            <input
+                                value={currentClient.name}
+                                onChange={e => setCurrentClient({ ...currentClient, name: e.target.value })}
+                                className="mt-1 w-full p-2 border rounded focus:ring-brand-primary focus:border-brand-primary bg-gray-50"
+                                placeholder="z.B. Jumpin Prater"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Webseite</label>
-                            <input value={currentClient.website} onChange={e => setCurrentClient({ ...currentClient, website: e.target.value })} className="mt-1 w-full p-2 border rounded bg-gray-50" placeholder="https://..." />
+                            <input
+                                value={currentClient.website}
+                                onChange={e => setCurrentClient({ ...currentClient, website: e.target.value })}
+                                className="mt-1 w-full p-2 border rounded bg-gray-50"
+                                placeholder="https://jumpin.at"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">WordPress API URL</label>
-                            <input value={currentClient.wordpressUrl} onChange={e => setCurrentClient({ ...currentClient, wordpressUrl: e.target.value })} className="mt-1 w-full p-2 border rounded" placeholder="https://.../wp-json" />
+                            <input
+                                value={currentClient.wordpressUrl}
+                                onChange={e => setCurrentClient({ ...currentClient, wordpressUrl: e.target.value })}
+                                className="mt-1 w-full p-2 border rounded bg-gray-50"
+                                placeholder="https://.../wp-json"
+                            />
                         </div>
+
                         <div className="pt-4 border-t mt-4">
-                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-1"><Zap size={14} className="text-yellow-600" /> n8n Webhook (Meta Gen)</label>
-                            <input value={currentClient.n8nWebhookMeta} onChange={e => setCurrentClient({ ...currentClient, n8nWebhookMeta: e.target.value })} className="mt-1 w-full p-2 border rounded bg-gray-50 font-mono text-xs" />
+                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                                <Zap size={14} className="text-yellow-600" /> n8n Webhook (Meta Gen)
+                            </label>
+                            <input
+                                value={currentClient.n8nWebhookMeta}
+                                onChange={e => setCurrentClient({ ...currentClient, n8nWebhookMeta: e.target.value })}
+                                className="mt-1 w-full p-2 border rounded bg-gray-50 font-mono text-xs"
+                                placeholder="Webhook URL für Meta Generierung"
+                            />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-1"><Zap size={14} className="text-yellow-600" /> n8n Webhook (Alt Text)</label>
-                            <input value={currentClient.n8nWebhookAltText} onChange={e => setCurrentClient({ ...currentClient, n8nWebhookAltText: e.target.value })} className="mt-1 w-full p-2 border rounded bg-gray-50 font-mono text-xs" />
+                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                                <Zap size={14} className="text-yellow-600" /> n8n Webhook (Alt Text)
+                            </label>
+                            <input
+                                value={currentClient.n8nWebhookAltText}
+                                onChange={e => setCurrentClient({ ...currentClient, n8nWebhookAltText: e.target.value })}
+                                className="mt-1 w-full p-2 border rounded bg-gray-50 font-mono text-xs"
+                                placeholder="Webhook URL für Alt Text"
+                            />
                         </div>
                     </div>
 
@@ -147,20 +179,73 @@ export function Clients() {
                         <h3 className="text-lg font-bold border-b pb-2 mb-4 flex items-center gap-2">
                             <Activity size={18} className="text-brand-primary-dark" /> SEO Global Memory
                         </h3>
+
                         <div className="grid grid-cols-2 gap-4">
-                            <div><label className="block text-sm font-medium text-gray-700">Brand Name</label><input value={currentClient.seoMemory.brand} onChange={e => setCurrentClient({ ...currentClient, seoMemory: { ...currentClient.seoMemory, brand: e.target.value } })} className="mt-1 w-full p-2 border rounded bg-gray-50" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700">Tone of Voice</label><input value={currentClient.seoMemory.tone} onChange={e => setCurrentClient({ ...currentClient, seoMemory: { ...currentClient.seoMemory, tone: e.target.value } })} className="mt-1 w-full p-2 border rounded bg-gray-50" /></div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Brand Name</label>
+                                <input
+                                    value={currentClient.seoMemory.brand}
+                                    onChange={e => setCurrentClient({ ...currentClient, seoMemory: { ...currentClient.seoMemory, brand: e.target.value } })}
+                                    className="mt-1 w-full p-2 border rounded bg-gray-50"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Tone of Voice</label>
+                                <input
+                                    value={currentClient.seoMemory.tone}
+                                    onChange={e => setCurrentClient({ ...currentClient, seoMemory: { ...currentClient.seoMemory, tone: e.target.value } })}
+                                    className="mt-1 w-full p-2 border rounded bg-gray-50"
+                                    placeholder="z.B. Du-Form, Begeisternd"
+                                />
+                            </div>
                         </div>
-                        <div><label className="block text-sm font-medium text-gray-700">Services (Komma-getrennt)</label><textarea value={currentClient.seoMemory.servicesTaxonomy.join(', ')} onChange={e => handleArrayInput('servicesTaxonomy', e.target.value)} className="mt-1 w-full p-2 border rounded h-20 bg-gray-50" /></div>
-                        <div><label className="block text-sm font-medium text-gray-700">USPs (Komma-getrennt)</label><textarea value={currentClient.seoMemory.uniqueSellingPoints.join(', ')} onChange={e => handleArrayInput('uniqueSellingPoints', e.target.value)} className="mt-1 w-full p-2 border rounded h-16 bg-gray-50" /></div>
-                        <div><label className="block text-sm font-medium text-gray-700">Erlaubte Städte</label><input value={currentClient.seoMemory.allowedCities.join(', ')} onChange={e => handleArrayInput('allowedCities', e.target.value)} className="mt-1 w-full p-2 border rounded bg-gray-50" /></div>
-                        <div><label className="block text-sm font-medium text-gray-700">Verbotene Begriffe</label><input value={currentClient.seoMemory.forbiddenTerms.join(', ')} onChange={e => handleArrayInput('forbiddenTerms', e.target.value)} className="mt-1 w-full p-2 border rounded text-red-600 bg-red-50" /></div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Services (Komma-getrennt)</label>
+                            <textarea
+                                value={currentClient.seoMemory.servicesTaxonomy.join(', ')}
+                                onChange={e => handleArrayInput('servicesTaxonomy', e.target.value)}
+                                className="mt-1 w-full p-2 border rounded h-20 bg-gray-50"
+                                placeholder="Trampolin, Kindergeburtstag, Firmenevent..."
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">USPs (Komma-getrennt)</label>
+                            <textarea
+                                value={currentClient.seoMemory.uniqueSellingPoints.join(', ')}
+                                onChange={e => handleArrayInput('uniqueSellingPoints', e.target.value)}
+                                className="mt-1 w-full p-2 border rounded h-16 bg-gray-50"
+                                placeholder="Größte Halle Wiens, Gratis Parkplatz..."
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Erlaubte Städte</label>
+                            <input
+                                value={currentClient.seoMemory.allowedCities.join(', ')}
+                                onChange={e => handleArrayInput('allowedCities', e.target.value)}
+                                className="mt-1 w-full p-2 border rounded bg-gray-50"
+                                placeholder="Wien, Niederösterreich..."
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Verbotene Begriffe</label>
+                            <input
+                                value={currentClient.seoMemory.forbiddenTerms.join(', ')}
+                                onChange={e => handleArrayInput('forbiddenTerms', e.target.value)}
+                                className="mt-1 w-full p-2 border rounded text-red-600 bg-red-50"
+                                placeholder="billig, gratis..."
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
+    // LIST MODE
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -194,9 +279,14 @@ export function Clients() {
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Automation:</span>
+                                        {/* FIX: Removed 'title' prop from Zap icons, used wrapper div instead for tooltip behavior */}
                                         <div className="flex gap-2">
-                                            <Zap size={16} className={client.n8nWebhookMeta ? "text-green-500" : "text-gray-300"} title="Meta Gen" />
-                                            <Zap size={16} className={client.n8nWebhookAltText ? "text-green-500" : "text-gray-300"} title="Alt Text" />
+                                            <div title="Meta Gen">
+                                                <Zap size={16} className={client.n8nWebhookMeta ? "text-green-500" : "text-gray-300"} />
+                                            </div>
+                                            <div title="Alt Text">
+                                                <Zap size={16} className={client.n8nWebhookAltText ? "text-green-500" : "text-gray-300"} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

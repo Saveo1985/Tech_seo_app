@@ -4,11 +4,10 @@ import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
 import { Settings } from './pages/Settings';
-import { Clients } from './pages/Clients'; // Import updated
+import { Clients } from './pages/Clients';
+import { Scanner } from './pages/Scanner'; // Preserved Scanner
 import { Login } from './pages/Login';
-import { Scanner } from './pages/Scanner'; // PRESERVED existing route
-import { AuthProvider, useAuth } from './contexts/AuthContext'; // IMPORT FIX: ./context -> ./contexts
-import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Preserved corrected import
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { user, loading } = useAuth();
@@ -33,16 +32,10 @@ function App() {
                         <Route path="clients" element={<Clients />} />
                         <Route path="tasks" element={<Tasks />} />
                         <Route path="settings" element={<Settings />} />
-                        <Route path="scanner" element={<Scanner />} /> {/* PRESERVED */}
+                        <Route path="scanner" element={<Scanner />} /> {/* Preserved */}
                     </Route>
                 </Routes>
             </Router>
-            <Toaster position="bottom-right" toastOptions={{
-                style: {
-                    background: '#333',
-                    color: '#fff',
-                },
-            }} />
         </AuthProvider>
     );
 }
