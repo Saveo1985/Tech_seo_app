@@ -1,28 +1,22 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { Layout } from '@/components/layout/Layout';
 
 import { Dashboard } from '@/pages/Dashboard';
 import { Tasks } from '@/pages/Tasks';
 import { Settings } from '@/pages/Settings';
-import { Login } from '@/pages/Login';
 import { Scanner } from '@/pages/Scanner';
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-    const { user, loading } = useAuth();
-    if (loading) return <div className="h-screen bg-brand-light flex items-center justify-center">Lade System...</div>;
-    if (!user) return <Navigate to="/login" />;
-    return children;
-};
+// KEIN LOGIN MEHR ERFORDERLICH
+// Wir rendern die Layout-Komponente direkt ohne Schutz.
 
 function App() {
     return (
         <AuthProvider>
             <Router>
                 <Routes>
-                    <Route path="/login" element={<Login />} />
-
-                    <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                    {/* Public Shell Routes - No Protection */}
+                    <Route path="/" element={<Layout />}>
                         <Route index element={<Dashboard />} />
                         <Route path="scanner" element={<Scanner />} />
                         <Route path="tasks" element={<Tasks />} />
