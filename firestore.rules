@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. GLOBAL LOCK (Default Deny)
+    // Verhindert Schreibzugriffe auf Root-Ebene
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. APP SPECIFIC SCOPE (Single Backend Law)
+    // APP_ID: 2h_web_solutions_tech_seo_app_v1
+    match /apps/2h_web_solutions_tech_seo_app_v1/{document=**} {
+      // Nur authentifizierte Nutzer dürfen lesen/schreiben
+      allow read, write: if request.auth != null;
+    }
+  }
+}
